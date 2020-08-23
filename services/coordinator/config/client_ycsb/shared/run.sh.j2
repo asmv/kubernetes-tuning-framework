@@ -1,0 +1,7 @@
+#!/bin/bash
+# More info on this file's parameters: https://github.com/brianfrankcooper/YCSB/wiki/Running-a-Workload
+# Properties duplicated accross files will be loaded from the llast specified configuration file
+mkdir -p /output
+cd /ycsb
+bin/ycsb load {{ database_name }} -P workloads/{{ workload_file }} -P /properties/db.properties -P /shared/multiclient.properties > /output/loadresult \
+&& bin/ycsb run {{ database_name }} -P workloads/{{ workload_file }} -P /properties/db.properties -P /shared/multiclient.properties > /output/runresult

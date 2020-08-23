@@ -1,0 +1,6 @@
+port 6379
+cluster-enabled {{ cluster_enabled_yesno }}
+cluster-config-file nodes.conf
+cluster-node-timeout 5000
+appendonly yes
+{{ config_items }}

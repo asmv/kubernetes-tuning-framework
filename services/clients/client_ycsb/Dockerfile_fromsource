@@ -1,0 +1,19 @@
+FROM maven:3.6.3-jdk-11-slim
+
+RUN apt-get update && apt-get install -y git python \
+    && apt-get autoremove -y \
+    && apt-get clean -y \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN git clone https://github.com/brianfrankcooper/YCSB.git /ycsb && cd /ycsb && git checkout tags/0.17.0
+
+WORKDIR /ycsb
+
+# Update the above line with any new bindings added.
+# Some additional files may need to be added to test certain databases. 
+#   E.g.: JDBC-binding for Postgres needs additional PostgreSQL JDBC driver
+RUN mvn -pl site.ycsb:jdbc-binding,site.ycsb:cassandra-binding,site.ycsb:redis-binding -am clean package
+
+COPY ycsb /ycsb/bin/ycsb
+
+CMD ["sleep", "infinity"]

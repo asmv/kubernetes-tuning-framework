@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# TODO: Delete this, is just done in the appropriate configurator
+
+# Need to do this in two steps since Kustomization does not accept yaml CRDs (only json format which are not included in the submodule)
+kubectl --namespace {{ namespace_name }} apply -f zalando/manifests/postgresql.crd.yaml
+sleep 1
+kubectl --namespace {{ namespace_name }} apply -k .

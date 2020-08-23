@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# "Catch all" Kustomization file to instantiate everything in one command and make it easy to configure namespace
+namespace: {{ namespace_name }}
+bases:
+  - zalando/manifests
+resources:
+  - nossl-password.yaml
+  - minimal-manifest.yaml

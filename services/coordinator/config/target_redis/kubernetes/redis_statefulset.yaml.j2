@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+  labels:
+    app: redis
+spec:
+  serviceName: redis
+  replicas: {{ replicas }}
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+        type: server
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: type
+                operator: In
+                values:
+                - server
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+        - name: redis
+          image: redis:latest
+          command:
+          - redis-server
+          - "/redis-master/redis.conf"
+          env:
+          - name: MASTER
+            value: "true"
+            ports:
+          ports:
+          - containerPort: 6379
+          resources:
+            limits:
+              cpu: 1000m
+              memory: "2Gi"
+            requests:
+              cpu: "800m"
+              memory: "1Gi"
+          volumeMounts:
+          - mountPath: /redis-master
+            name: config
+      volumes:
+        - name: config
+          configMap:
+            name: redis-configmap
+            items:
+            - key: redis_configmap.conf
+              path: redis.conf

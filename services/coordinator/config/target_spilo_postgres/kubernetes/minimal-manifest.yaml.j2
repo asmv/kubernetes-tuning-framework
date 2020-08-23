@@ -1,0 +1,21 @@
+apiVersion: "acid.zalan.do/v1"
+kind: postgresql
+metadata:
+  name: acid-minimal-cluster
+  namespace: default
+spec:
+  teamId: "acid"
+  volume:
+    size: 1Gi
+  numberOfInstances: {{ replicas }}
+  users:
+    zalando:  # database owner
+    - superuser
+    - createdb
+  postgresql:
+    version: "12"
+    parameters:
+      max_connections: "300"
+  patroni:
+    pg_hba: # This secton is used to enable non-ssl connections without changing the base spilo image used
+    - host all all all md5
