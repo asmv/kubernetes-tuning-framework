@@ -1,0 +1,3 @@
+[submodule "services/coordinator/config/target_spilo_postgres_kubernetes/zalando"]
+	path = services/coordinator/config/target_spilo_postgres_kubernetes/zalando
+	url = https://github.com/zalando/postgres-operator.git
