@@ -83,7 +83,7 @@ class Optimizer:
         self.parameter_config = parameter_config
         self.search_algorithm = self._get_search_algorithm(search_algorithm_config["type"], search_algorithm_config["initialization"])
         # No current support due to bug
-        self.scheduler = SchedulerType.NoScheduler
+        self.scheduler = self._get_scheduler(SchedulerType.NoScheduler)
 
 
     def _get_axseach(self, search_config):
@@ -104,7 +104,7 @@ class Optimizer:
         raise NotImplementedError()
 
     def _get_search_algorithm(self, search_algorithm_type: str, search_algo_config: Dict[str, object]):
-        search_algorithm_type = SearchAlgorithmType.get(search_algorithm_type_string)
+        search_algorithm_type = SearchAlgorithmType.get(search_algorithm_type)
         if search_algorithm_type is SearchAlgorithmType.axsearch:
             return self._get_axseach(search_algo_config)
         elif search_algorithm_type is SearchAlgorithmType.grid:

@@ -28,7 +28,16 @@ class CassandraConfigurator(_target_configurator_base.TargetConfigurator):
         self.config_root = path.abspath(path.join(path.dirname(__file__), "../../../config", self.name))
 
     def deploy(self, config: Dict[str, object], kube_context: launch.KubeContext):
-        cassandra_yaml_param_string = ";".join(["{0}={1}".format(k, v if v is not None else "") for k, v in config["dbconfig"].items()])
+        cassandra_params = {}
+        for k, v in config["param_config"].items():
+            try:
+                _, parameter = k.split(":")
+                cassandra_params[parameter] = v
+            except Exception as e:
+                warnings.warn(e)
+                continue
+        cassandra_yaml_param_string = ";".join(["{0}={1}".format(k, v) for k, v in cassandra_params.items()])
+        # cassandra_yaml_param_string = ";".join(["{0}={1}".format(k, v if v is not None else "") for k, v in config["dbconfig"].items()])
         config.update({
             "namespace_name": kube_context.namespace_name,
             # "cassandra_yaml_bind_folder_path": cassandra_kubernetes_config_dir.name,

@@ -10,7 +10,7 @@
         "target": {
             "cassandra_replicas": 2,
             "cassandra_replication_factor": 1,
-            "cassandra_parameters": {}
+            "cassandra_config": {}
         },
         "search_algorithm": {
             "initialization": {

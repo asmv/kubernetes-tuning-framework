@@ -36,7 +36,7 @@ def _run_experiment(target, client, target_configuration, client_configuraton, p
             _config_pipeline(target_configurator, config=target_configuration, kube_context=kc)
         with client.value(target) as client_configurator:
             _config_pipeline(client_configurator, config=client_configuraton, kube_context=kc)
-            return client_configurator.get_experiment_results(config=static_configuration, kube_context=kc)
+            return client_configurator.get_experiment_results(config=client_configuraton, kube_context=kc)
 
 def run_experiment(target, client, config, tune_run_func_config, workers):
 
