@@ -1,5 +1,5 @@
 create keyspace ycsb
-    WITH REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor': {{ replication_factor }} };
+    WITH REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor': {{ cassandra_replication_factor }} };
 USE ycsb;
 create table usertable (
     y_id varchar primary key,

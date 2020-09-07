@@ -7,7 +7,7 @@ spec:
     matchLabels:
       app: cassandra
   serviceName: cassandra
-  replicas: {{ replicas }}
+  replicas: {{ cassandra_replicas }}
   template:
     metadata:
       labels:

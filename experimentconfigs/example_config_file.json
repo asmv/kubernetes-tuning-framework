@@ -3,8 +3,8 @@
         "client": {
             "ycsb_replicas": 1,
             "ycsb_thread_count": 16,
-            "ycsb_record_count": 1000,
-            "ycsb_operation_count": 10000,
+            "ycsb_record_count": 5000,
+            "ycsb_operation_count": 50000,
             "workload_file": "workloada"
         },
         "target": {
