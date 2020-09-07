@@ -74,14 +74,14 @@ class SearchAlgorithmType(enum.Enum):
 
 class Optimizer:
 
-    def __init__(self, testfunc, experiment_name: str, parameter_config: Dict[str, object], search_algorithm_config: Dict[str, object], objective_name: str, objective_direction: str, search_algorithm_type: SearchAlgorithmType, scheduler_type: SchedulerType, concurrent_workers=4):
+    def __init__(self, testfunc, experiment_name: str, parameter_config: Dict[str, object], search_algorithm_initialization: Dict[str, object], objective_name: str, objective_direction: str, search_algorithm_type: SearchAlgorithmType, scheduler_type: SchedulerType, concurrent_workers=4):
         self.wrapped_testfunc = functools.partial(wrap_func, testfunc)
         self.experiment_name = experiment_name
         self.objective_name = objective_name
         self.objective_direction = objective_direction
         self.concurrent_workers = concurrent_workers
         self.parameter_config = parameter_config
-        self.search_algorithm = self._get_search_algorithm(search_algorithm_type, search_algorithm_config)
+        self.search_algorithm = self._get_search_algorithm(search_algorithm_type, search_algorithm_initialization)
         self.scheduler = self._get_scheduler(scheduler_type)
 
     def _get_axseach(self, search_config):

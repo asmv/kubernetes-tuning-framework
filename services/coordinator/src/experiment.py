@@ -44,10 +44,6 @@ def _run_experiment(target, client, static_configuration, tuneconfig):
             return client_configurator.get_experiment_results(config=static_configuration, kube_context=kc)
 
 def run_experiment(target, client, config, tune_run_func_config, workers):
-    
-    # Since updating num_samples does not increase number of trials, add number of trials to the hash 
-    # Remove this line when updating num_samples DOES change increase number of samples 
-    config["num_samples"] = tune_run_func_config["num_samples"]
 
     config_identifier = hashlib.sha256(json.dumps(config, sort_keys=True, default=str).encode("utf-8")).hexdigest()
     # # # While experiment resuming is disabled, this includes timestamp
@@ -65,19 +61,30 @@ def run_experiment(target, client, config, tune_run_func_config, workers):
 
     opfunc = functools.partial(_run_experiment, target, client, config["static_configuration"])
 
-    search_algorithm_config = config["search_algorithm"] if "search_algorithm" in config else DEFAULT_SEARCH_CONFIG
+    search_algorithm_config = config["configuration"]["search_algorithm"]
+    client_config = config["configuration"]["client"]
+    target_config = config["configuration"]["target"]
+    parameter_config = config["parameters"]
 
     op = optimize.Optimizer(
         opfunc, 
         experiment_name=experiment_name,
-        parameter_config=config["parameters"],
-        objective_name=config["objective"]["name"],
-        search_algorithm_config=search_algorithm_config["config"],
-        objective_direction=config["objective"]["direction"],
-        search_algorithm_type=optimize.SearchAlgorithmType.get(search_algorithm_config["type"]),
-        scheduler_type=optimize.SchedulerType.NoScheduler, # No need to use another type of schedule without timeseries/ intermediate results. Context finalization is ignored if not NoScheduler and trial is terminated.
+        parameter_config=parameter_config,
+        search_algorithm_config=search_algorithm_config,
         concurrent_workers=workers
     )
+
+    # op = optimize.Optimizer(
+    #     opfunc, 
+    #     experiment_name=experiment_name,
+    #     parameter_config=config["parameters"],
+    #     objective_name=config["objective"]["name"],
+    #     search_algorithm_initialization=search_algorithm_config["initialization"],
+    #     objective_direction=search_algorithm_config["objective"]["direction"],
+    #     search_algorithm_type=optimize.SearchAlgorithmType.get(search_algorithm_config["type"]),
+    #     scheduler_type=optimize.SchedulerType.NoScheduler, # No need to use another type of schedule without timeseries/ intermediate results. Context finalization is ignored if not NoScheduler and trial is terminated.
+    #     concurrent_workers=workers
+    # )
     
     # Run the experiment
     with util.LogWriter(path.join(experiment_dir, "experiment_output.log")):
