@@ -74,15 +74,17 @@ class SearchAlgorithmType(enum.Enum):
 
 class Optimizer:
 
-    def __init__(self, testfunc, experiment_name: str, parameter_config: Dict[str, object], search_algorithm_initialization: Dict[str, object], objective_name: str, objective_direction: str, search_algorithm_type: SearchAlgorithmType, scheduler_type: SchedulerType, concurrent_workers=4):
+    def __init__(self, testfunc, experiment_name: str, parameter_config: Dict[str, object], search_algorithm_config: Dict[str, object], concurrent_workers=4):
         self.wrapped_testfunc = functools.partial(wrap_func, testfunc)
         self.experiment_name = experiment_name
-        self.objective_name = objective_name
-        self.objective_direction = objective_direction
+        self.objective_name = search_algorithm_config["objective"]["name"]
+        self.objective_direction = search_algorithm_config["objective"]["direction"]
         self.concurrent_workers = concurrent_workers
         self.parameter_config = parameter_config
-        self.search_algorithm = self._get_search_algorithm(search_algorithm_type, search_algorithm_initialization)
-        self.scheduler = self._get_scheduler(scheduler_type)
+        self.search_algorithm = self._get_search_algorithm(search_algorithm_config["type"], search_algorithm_config["initialization"])
+        # No current support due to bug
+        self.scheduler = SchedulerType.NoScheduler
+
 
     def _get_axseach(self, search_config):
         # https://github.com/facebook/Ax/issues/180
@@ -101,7 +103,8 @@ class Optimizer:
     def _get_gridsearch(self, search_config):
         raise NotImplementedError()
 
-    def _get_search_algorithm(self, search_algorithm_type: SearchAlgorithmType, search_algo_config: Dict[str, object]):
+    def _get_search_algorithm(self, search_algorithm_type: str, search_algo_config: Dict[str, object]):
+        search_algorithm_type = SearchAlgorithmType.get(search_algorithm_type_string)
         if search_algorithm_type is SearchAlgorithmType.axsearch:
             return self._get_axseach(search_algo_config)
         elif search_algorithm_type is SearchAlgorithmType.grid:

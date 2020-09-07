@@ -26,8 +26,7 @@
     },
     "parameters": [
         {
-            "name": "row_cache_size_in_mb",
-            "for": "cassandra",
+            "name": "cassandra:row_cache_size_in_mb",
             "type": "range",
             "bounds": [2, 256],
             "value_type": "int",

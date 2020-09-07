@@ -19,12 +19,6 @@ import argparse
 N_WORKERS = 2
 N_TRIALS = 8
 EXPERIMENT_EXPORT_RESULTS_DIRECTORY = "./results"
-DEFAULT_SEARCH_CONFIG = {
-    "type": "axsearch",
-    "config": {
-        "generation_strategy": "default"
-    }
-}
 
 def _config_pipeline(subclassed_configurator, config, kube_context):
     # Blocking next command until previous completion left up to configurator
@@ -34,13 +28,14 @@ def _config_pipeline(subclassed_configurator, config, kube_context):
     subclassed_configurator.prepare(config, kube_context=kube_context, pod_ids=configurator_pod_ids)
     subclassed_configurator.execute(config, kube_context=kube_context, pod_ids=configurator_pod_ids)
 
-def _run_experiment(target, client, static_configuration, tuneconfig):
-    static_configuration["dbconfig"].update(tuneconfig)
+def _run_experiment(target, client, target_configuration, client_configuraton, param_config):
     with launch.KubeContext() as kc:
         with target.value(client) as target_configurator:
-            _config_pipeline(target_configurator, config=static_configuration, kube_context=kc)
+            # Add parameters to the target configuration
+            target_configuration["param_config"] = param_config
+            _config_pipeline(target_configurator, config=target_configuration, kube_context=kc)
         with client.value(target) as client_configurator:
-            _config_pipeline(client_configurator, config=static_configuration, kube_context=kc)
+            _config_pipeline(client_configurator, config=client_configuraton, kube_context=kc)
             return client_configurator.get_experiment_results(config=static_configuration, kube_context=kc)
 
 def run_experiment(target, client, config, tune_run_func_config, workers):
@@ -59,12 +54,12 @@ def run_experiment(target, client, config, tune_run_func_config, workers):
         with open(config_dump_filename, "w") as config_dump_file:
             json.dump(config, config_dump_file, sort_keys=True, indent=2, default=str)
 
-    opfunc = functools.partial(_run_experiment, target, client, config["static_configuration"])
-
     search_algorithm_config = config["configuration"]["search_algorithm"]
     client_config = config["configuration"]["client"]
     target_config = config["configuration"]["target"]
     parameter_config = config["parameters"]
+
+    opfunc = functools.partial(_run_experiment, target, client, target_config, client_config)
 
     op = optimize.Optimizer(
         opfunc, 
@@ -73,24 +68,12 @@ def run_experiment(target, client, config, tune_run_func_config, workers):
         search_algorithm_config=search_algorithm_config,
         concurrent_workers=workers
     )
-
-    # op = optimize.Optimizer(
-    #     opfunc, 
-    #     experiment_name=experiment_name,
-    #     parameter_config=config["parameters"],
-    #     objective_name=config["objective"]["name"],
-    #     search_algorithm_initialization=search_algorithm_config["initialization"],
-    #     objective_direction=search_algorithm_config["objective"]["direction"],
-    #     search_algorithm_type=optimize.SearchAlgorithmType.get(search_algorithm_config["type"]),
-    #     scheduler_type=optimize.SchedulerType.NoScheduler, # No need to use another type of schedule without timeseries/ intermediate results. Context finalization is ignored if not NoScheduler and trial is terminated.
-    #     concurrent_workers=workers
-    # )
     
     # Run the experiment
     with util.LogWriter(path.join(experiment_dir, "experiment_output.log")):
         result = op.run(tune_run_func_config, export_directory=experiment_dir, resume=is_continuation)
 
-    return result.get_best_config(config["objective"]["name"])
+    return result.get_best_config(search_algorithm_config["objective"]["name"])
 
 
 def interpret_args(target: configurator_enums.DBTarget, client: configurator_enums.DBClient, json_config_file: str, trials: int = 20, max_failures: int = 0, workers: int = 2, **ignored_kwargs):
