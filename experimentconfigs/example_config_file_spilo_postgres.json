@@ -1,0 +1,35 @@
+{
+    "configuration": {
+        "client": {
+            "ycsb_replicas": 1,
+            "ycsb_thread_count": 16,
+            "ycsb_record_count": 5000,
+            "ycsb_operation_count": 50000,
+            "workload_file": "workloada"
+        },
+        "target": {
+            "postgres_replicas": 1,
+            "postgres_config": {}
+        },
+        "search_algorithm": {
+            "initialization": {
+              "generation_strategy": "sobol15_gpei"
+            },
+            "type": "axsearch",
+            "num_samples": 1,
+            "objective": {
+                "name": "OVERALL_Throughput(ops/sec)",
+                "direction": "max"
+            }
+        }
+    },
+    "parameters": [
+        {
+            "name": "postgres:shared_buffers",
+            "type": "range",
+            "bounds": [64, 512],
+            "log_scale": false,
+            "value_type": "int"
+        }
+    ]
+}

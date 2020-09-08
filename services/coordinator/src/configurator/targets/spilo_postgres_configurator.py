@@ -31,6 +31,16 @@ class SpiloPostgresConfigurator(_target_configurator_base.TargetConfigurator):
         config.update({
             "namespace_name": kube_context.namespace_name
         })
+        for k, v in config["param_config"].items():
+            try:
+                identifier, param = k.split(":")
+                if identifier == "postgres":
+                    config["postgres_config"][param] = v
+                else:
+                    warnings.warn("Unrecognized {0} parameter: {1}".format(identifier, param))
+            except Exception:
+                warnings.warn("Unrecognized parameter: {}".format(k))
+                continue
         kubeconfig_dir = template.get_tempdir_with_config(path.join(self.config_root, "kubernetes"), config)
         self.open_temp_dirs.append(kubeconfig_dir) # TODO: This is only needed for the next line, clean up later?
         with open(path.join(kubeconfig_dir.name, "minimal-manifest.yaml"), "r+") as manifest_config:
@@ -38,9 +48,9 @@ class SpiloPostgresConfigurator(_target_configurator_base.TargetConfigurator):
             postgresql_spec = minimal_manifest_yaml["spec"]["postgresql"]
             if "parameters" not in postgresql_spec:
                 # convert to string since the postgresql crd spec only accepts string type
-                postgresql_spec["parameters"] = {k: str(v) for k, v in config["dbconfig"].items()}
+                postgresql_spec["parameters"] = {k: str(v) for k, v in config["postgres_config"].items()}
             else:
-                postgresql_spec["parameters"].update({k: str(v) for k, v in config["dbconfig"].items()})
+                postgresql_spec["parameters"].update({k: str(v) for k, v in config["postgres_config"].items()})
             manifest_config.seek(0)
             manifest_config.truncate(0)
             manifest_config.write(yaml.dump(minimal_manifest_yaml))
@@ -50,7 +60,7 @@ class SpiloPostgresConfigurator(_target_configurator_base.TargetConfigurator):
         kube_context.apply_kubectl_yaml_config(kubeconfig_dir.name, wait_for_ready=False)
         kube_context.apply_kubectl_yaml_config(path.join(kubeconfig_dir.name, "cluster-level-rbac-patch.yaml"), namespaced=False)
         # Need to wait manually because zalando postgres operator uses a CustomResourceDefinition that is not easily parseable to get StatefulSets
-        kube_context._sts_wait("acid-minimal-cluster", config["replicas"])
+        kube_context._sts_wait("acid-minimal-cluster", config["postgres_replicas"])
 
     def prepare(self, config: Dict[str, object], kube_context: launch.KubeContext, pod_ids: Dict[str, List[str]]):
         if self.client is configurator_enums.DBClient.ycsb:
