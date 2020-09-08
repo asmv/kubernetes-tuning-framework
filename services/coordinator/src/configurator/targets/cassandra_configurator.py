@@ -31,10 +31,13 @@ class CassandraConfigurator(_target_configurator_base.TargetConfigurator):
         cassandra_params = {}
         for k, v in config["param_config"].items():
             try:
-                _, parameter = k.split(":")
-                cassandra_params[parameter] = v
-            except Exception as e:
-                warnings.warn(e)
+                identifier, param = k.split(":")
+                if identifier == "cassandra":
+                    cassandra_params[param] = v
+                else:
+                    warnings.warn("Unrecognized {0} parameter: {1}".format(identifier, param))
+            except Exception:
+                warnings.warn("Unrecognized parameter: {}".format(k))
                 continue
         cassandra_yaml_param_string = ";".join(["{0}={1}".format(k, v) for k, v in cassandra_params.items()])
         # cassandra_yaml_param_string = ";".join(["{0}={1}".format(k, v if v is not None else "") for k, v in config["dbconfig"].items()])

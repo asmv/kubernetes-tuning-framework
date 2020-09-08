@@ -28,9 +28,12 @@ class RedisConfigurator(_target_configurator_base.TargetConfigurator):
     def deploy(self, config: Dict[str, object], kube_context: launch.KubeContext):
         for k, v in config["param_config"].items():
             try:
-                _, param = k.split(":")
-                config["redis_config"][param] = v
-            except Exception as e:
+                identifier, param = k.split(":")
+                if identifier == "redis":
+                    config["redis_config"][param] = v
+                else:
+                    warnings.warn("Unrecognized {0} parameter: {1}".format(identifier, param))
+            except Exception:
                 warnings.warn("Unrecognized parameter: {}".format(k))
                 continue
         config.update({
