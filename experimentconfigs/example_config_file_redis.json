@@ -1,0 +1,37 @@
+{
+    "configuration": {
+        "client": {
+            "ycsb_replicas": 1,
+            "ycsb_thread_count": 16,
+            "ycsb_record_count": 5000,
+            "ycsb_operation_count": 50000,
+            "workload_file": "workloada"
+        },
+        "target": {
+            "redis_replicas": 1,
+            "redis_config": {
+                "appendonly": "yes"
+            }
+        },
+        "search_algorithm": {
+            "initialization": {
+              "generation_strategy": "sobol15_gpei"
+            },
+            "type": "axsearch",
+            "num_samples": 1,
+            "objective": {
+                "name": "OVERALL_Throughput(ops/sec)",
+                "direction": "max"
+            }
+        }
+    },
+    "parameters": [
+        {
+            "name": "redis:auto-aof-rewrite-percentage",
+            "type": "range",
+            "bounds": [0, 100],
+            "value_type": "int",
+            "log_scale": false
+        }
+    ]
+}

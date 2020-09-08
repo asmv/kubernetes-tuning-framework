@@ -1,2 +1,2 @@
-*.json
+old_example_config_file.json
 !.gitignore
