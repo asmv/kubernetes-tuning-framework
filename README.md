@@ -31,6 +31,19 @@
 4. Import the python scripts for the new target into `services/coordinator/src/configurator/configurator_enums.py` and add a new enumeration for the new target.
 5. Adjust any client python scripts for clients designed to test the new target.
 
+## Current Implementations
+
+### Clients
+
+1. Client YCSB - The [Yahoo Cloud Serving Benchmark](https://github.com/brianfrankcooper/YCSB), used for testing throughout and latency for various data stores.
+
+### Targets
+
+1. Cassandra - A configuration that tests Cassandra clusters.
+2. Redis - A configuration that tests Redis in either a standalone or cluster configuration.
+3. Spilo_Postgres - A configuration that uses the [Zalando Postgres Operator](https://github.com/zalando/postgres-operator) to ceate a highly-available PostgreSQL cluster.
+    - Note: This does not surrently work on the master branch and requires the YCSB client to be built from source with an install of the PostgreSQL JDBC driver.
+
 ## Future Features:
 
 - Web-based editor to automatically generate configuration files.
